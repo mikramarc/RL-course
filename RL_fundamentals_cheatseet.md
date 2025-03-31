@@ -1,5 +1,5 @@
 
-# Reinforcement Learning Fundamentals
+# Reinforcement Learning Fundamentals Cheatsheet
 
 ## Core Concepts
 
@@ -53,14 +53,23 @@ Where:
 -   Target is the observed value we're moving toward
 -   [Target - OldEstimate] represents the error in our current estimate
 
-### Step size
-
-The learning rate $\alpha$ that determines how much new information affects existing estimates. When constant, favors recent observations.
-
 ### Stationarity vs Non-stationarity
 
 -   **Stationary**: The underlying reward distributions do not change over time
 -   **Non-stationary**: The underlying reward distributions change over time
+
+### Step size
+
+The learning rate $\alpha$ that determines how much new information affects existing estimates.
+
+-   **Constant step size** (e.g., $\alpha = 0.1$): Gives more weight to recent observations, helping adapt to non-stationary environments.
+    
+    -   Update equation: $Q_{t+1}(a) = Q_t(a) + \alpha [R_t - Q_t(a)]$
+    -   Example: In TD learning, constant $\alpha$ allows value estimates to track changing rewards when opponent strategies evolve over time.
+-   **Decreasing step size** (e.g., $\alpha = \frac{1}{n}$): Gives equal weight to all observations over time, converging to true expected values in stationary environments.
+    
+    -   Update equation: $Q_{t+1}(a) = Q_t(a) + \frac{1}{n(a)} [R_t - Q_t(a)]$, where $n(a)$ is the number of times action $a$ has been selected.
+    -   Example: When estimating Q-values in a fixed maze with constant rewards, decreasing $\alpha$ ensures convergence to the true action-values.
 
 ### Epsilon-greedy algorithm
 
@@ -107,9 +116,17 @@ Select action that maximizes: $Q(a) + c\sqrt{\frac{\ln(t)}{N(a)}}$
 
 A mathematical framework for modeling decision-making where outcomes are partly random and partly under agent control. Defined by states, actions, transition probabilities, and rewards.
 
+### MDP validity
+
+An MDP is valid when the environment satisfies the Markov property: the future depends only on the current state and action, not on the history of previous states and actions. Formally, $p(s_{t+1}|s_t,a_t,s_{t-1},a_{t-1},...,s_0,a_0) = p(s_{t+1}|s_t,a_t)$. This property allows us to make optimal decisions based solely on the current state without needing to remember the history.
+
 ### Dynamics
 
 The state transition probability function: $p(s'|s,a)$ - probability of transitioning to state $s'$ from state $s$ after taking action $a$.
+
+### Step
+
+A single interaction between the agent and environment, consisting of: the agent observing a state, selecting an action, receiving a reward, and transitioning to a new state. Also called a time step.
 
 ### Episode, Episodic task
 
@@ -118,6 +135,14 @@ An episode is a complete sequence from initial to terminal state. Episodic tasks
 ### Discounting
 
 Reducing the importance of future rewards by a factor $\gamma$ $(0 \leq \gamma \leq 1)$ per time step. The present value of a future reward $R$ at $t$ steps in the future is $\gamma^t \times R$.
+
+**Why use discounting:**
+
+1.  **Uncertainty about the future**: Future rewards are less certain than immediate rewards
+2.  **Mathematical convenience**: Ensures finite returns in continuing tasks with non-zero rewards
+3.  **Aligns with human/animal behavior**: Preference for immediate rewards over delayed ones
+4.  **Avoids infinite returns**: In continuing tasks, summing undiscounted rewards could yield infinity
+5.  **Simplifies computation**: Makes recursive Bellman equations converge more readily
 
 ### Continuous vs Non-continuous
 
