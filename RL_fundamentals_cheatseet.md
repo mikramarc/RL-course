@@ -1,6 +1,8 @@
 
 # Reinforcement Learning Fundamentals Cheatsheet
 
+## Core Concepts
+
 ### Agent
 
 An entity that takes actions in an environment to maximize cumulative reward. The agent observes states, takes actions based on a policy, and receives rewards.
