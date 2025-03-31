@@ -253,13 +253,30 @@ For distribution models, this includes:
   - ✗ Introduces sampling variance
 
 ### Random-Sample One-Step Tabular Q-learning
+A planning method that uses a model to generate simulated experiences:
+
 ```
+Initialize Q(s,a) arbitrarily for all s ∈ S, a ∈ A
+For terminal states s, set Q(s,a) = 0 for all a ∈ A
+
 Loop forever:
-    S ← random state
-    A ← random action
+    S ← random previously observed state
+    A ← random action possible in S
     Use model to compute R, S' (reward and next state)
-    Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]
+    If S' is terminal:
+        Q(S,A) ← Q(S,A) + α[R - Q(S,A)]
+    Else:
+        Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]
 ```
+
+Key properties:
+- Performs Q-learning updates on experiences generated from the model
+- Samples state-action pairs uniformly (or with some other distribution)
+- Does not follow trajectories (samples individual transitions)
+- Focuses computational effort equally across state space rather than on frequently visited states
+- Converges to optimal Q-values if all state-action pairs are sampled infinitely often
+- Can be interleaved with direct RL updates from real environment interactions
+- Unlike prioritized sweeping, doesn't focus computation on high-error states
 
 ### Direct RL vs Planning Updates
 - **Direct RL update**: Uses real experience from environment interaction
