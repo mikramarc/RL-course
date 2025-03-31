@@ -21,7 +21,7 @@ Monte Carlo (MC) methods learn from complete episodes of experience without requ
 First-visit MC: Average returns following the first visit to a state in each episode.
 Every-visit MC: Average returns following every visit to a state.
 
-Algorithm:
+Algorithm (First-visit MC):
 ```
 Initialize V(s) arbitrarily for all s ∈ S
 Initialize returns(s) as empty list for all s ∈ S
@@ -31,7 +31,7 @@ For each episode:
     G ← 0
     For each step t = T-1, T-2, ..., 0:
         G ← γG + Rₜ₊₁
-        If Sₜ not in S₀, S₁, ..., Sₜ₋₁ (for first-visit):
+        If Sₜ not visited before in this episode:
             Append G to returns(Sₜ)
             V(Sₜ) ← average(returns(Sₜ))
 ```
@@ -85,9 +85,10 @@ Repeat forever:
 ### Importance Sampling
 - Technique for estimating expected values under one distribution using samples from another
 - Corrects for the difference between target and behavior policies
-- Ordinary importance sampling: $V(s) = \frac{\sum_{i=1}^{N} \rho_i G_i}{\sum_{i=1}^{N} \rho_i}$
-- Weighted importance sampling: $V(s) = \frac{\sum_{i=1}^{N} \rho_i G_i}{N}$
-- Where $\rho_i = \frac{\prod_{t=0}^{T-1} \pi(A_t|S_t)}{\prod_{t=0}^{T-1} b(A_t|S_t)}$ is the importance sampling ratio
+- Importance sampling ratio: $\rho_t^{T-1} = \frac{\prod_{k=t}^{T-1} \pi(A_k|S_k)}{\prod_{k=t}^{T-1} b(A_k|S_k)}$
+- Ordinary importance sampling: $V(s) = \frac{\sum_{i=1}^{N} \rho_i G_i}{N}$
+- Weighted importance sampling: $V(s) = \frac{\sum_{i=1}^{N} \rho_i G_i}{\sum_{i=1}^{N} \rho_i}$
+- Weighted importance sampling has lower variance but is biased
 
 ## Temporal Difference Methods
 
@@ -100,14 +101,17 @@ $\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$
 
 ### TD(0) Algorithm
 ```
-Initialize V(s) arbitrarily for all s ∈ S
+Initialize V(s) arbitrarily for all s ∈ S, V(terminal) = 0
 Initialize π to the policy to be evaluated
 
 For each episode:
     Initialize S
     For each step of episode:
         Take action A according to π, observe R, S'
-        V(S) ← V(S) + α[R + γV(S') - V(S)]
+        If S' is terminal:
+            V(S) ← V(S) + α[R - V(S)]  // Note: γV(S') = 0 for terminal states
+        Else:
+            V(S) ← V(S) + α[R + γV(S') - V(S)]
         S ← S'
     Until S is terminal
 ```
@@ -160,20 +164,26 @@ For each episode:
 Off-policy TD control algorithm:
 ```
 Initialize Q(s,a) arbitrarily for all s ∈ S, a ∈ A
+For terminal states s, set Q(s,a) = 0 for all a ∈ A
 
 For each episode:
     Initialize S
     For each step of episode:
         Choose A from S using policy derived from Q (e.g., ε-greedy)
         Take action A, observe R, S'
-        Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]
+        If S' is terminal:
+            Q(S,A) ← Q(S,A) + α[R - Q(S,A)]  // Note: γmax_a Q(S',a) = 0 for terminal states
+        Else:
+            Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]
         S ← S'
     Until S is terminal
 ```
 
 ### Relationship with Bellman Optimality Equations
-Q-learning directly approximates the optimal action-value function $q_{*}$, independent of the policy being followed. It uses the Bellman optimality equation as an update rule:
+Q-learning directly approximates the optimal action-value function $q_{*}$ by using the Bellman optimality equation as an update rule:
 $Q(S,A) ← Q(S,A) + α[R + γ \max_a Q(S',a) - Q(S,A)]$
+
+This update is done regardless of the policy being followed, making it an off-policy method.
 
 ### On-Policy Sarsa vs Off-Policy Q-learning
 - Sarsa considers the actual next action (safer, more conservative)
@@ -189,7 +199,8 @@ $Q(S,A) ← Q(S,A) + α[R + γ \sum_a \pi(a|S')Q(S',a) - Q(S,A)]$
 
 ### Expected Sarsa vs Sarsa vs Q-learning
 - Expected Sarsa eliminates the variance due to random action selection in Sarsa
-- Expected Sarsa reduces to Q-learning if target policy is greedy
+- Expected Sarsa can be on-policy or off-policy depending on the target policy
+- If target policy is greedy, Expected Sarsa becomes equivalent to Q-learning
 - Expected Sarsa has lower variance than Sarsa (more stable learning)
 - Expected Sarsa is more computationally expensive per step
 - Order of performance (usually): Expected Sarsa > Q-learning > Sarsa
@@ -207,8 +218,17 @@ Selecting actions based on the current policy to interact with the environment.
 
 ### Model
 A representation of the environment's dynamics that allows simulation of experience.
-- **Transition model**: $p(s'|s,a)$ - State transition probabilities
-- **Reward model**: $r(s,a,s')$ - Expected rewards
+
+In a model:
+- Input: state $s$ and action $a$
+- Output: next state $s'$ and reward $r$
+
+Formally represented as:
+- $Model(s,a) \rightarrow (s', r)$
+
+For distribution models, this includes:
+- Transition function: $p(s'|s,a)$ - Probability of transitioning to $s'$ after taking action $a$ in state $s$
+- Reward function: $r(s,a)$ or $r(s,a,s')$ - Expected reward when taking action $a$ in state $s$ (possibly depending on $s'$)
 
 ### Distribution vs Sample Models
 - **Distribution model**: Complete probability distributions for transitions and rewards
@@ -257,22 +277,27 @@ Integrates acting, planning, and learning:
 
 ### Tabular Dyna-Q
 ```
-Initialize Q(s,a) and Model(s,a) for all s ∈ S, a ∈ A
+Initialize Q(s,a) = 0 and Model(s,a) for all s ∈ S, a ∈ A
 For each episode:
     S ← current state
-    A ← ε-greedy(S, Q)
-    Take action A, observe reward R and next state S'
-    Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]  // Direct RL
-    Model(S,A) ← R, S'  // Model learning
-    
-    // Planning (n simulated steps)
-    For i = 1 to n:
-        S_sim ← random previously observed state
-        A_sim ← random previously taken action in S_sim
-        R_sim, S'_sim ← Model(S_sim, A_sim)
-        Q(S_sim, A_sim) ← Q(S_sim, A_sim) + α[R_sim + γ max_a Q(S'_sim, a) - Q(S_sim, A_sim)]
-
-    S ← S'
+    While S is not terminal:
+        A ← ε-greedy(S, Q)
+        Take action A, observe reward R and next state S'
+        
+        // Direct RL update
+        Q(S,A) ← Q(S,A) + α[R + γ max_a Q(S',a) - Q(S,A)]
+        
+        // Model learning
+        Model(S,A) ← R, S'
+        
+        // Planning (n simulated steps)
+        Repeat n times:
+            S_sim ← random previously observed state
+            A_sim ← random previously taken action in S_sim
+            R_sim, S'_sim ← Model(S_sim, A_sim)
+            Q(S_sim, A_sim) ← Q(S_sim, A_sim) + α[R_sim + γ max_a Q(S'_sim, a) - Q(S_sim, A_sim)]
+        
+        S ← S'
 ```
 
 ### Model Inaccuracies and Effects on Planning
@@ -289,9 +314,9 @@ For each episode:
   4. Inability to adapt to environment changes
 
 ### Dyna-Q+ Algorithm
-Extends Dyna-Q to encourage exploration of states/actions not recently tried:
+Extends Dyna-Q to encourage exploration of states/actions not recently tried by adding an exploration bonus:
 ```
-// Changes to standard Dyna-Q:
+// Additions to standard Dyna-Q:
 Initialize τ(s,a) = 0 for all s, a (time since last visit)
 
 For each step:
@@ -307,3 +332,5 @@ For each step:
     R_sim ← R_sim + κ√τ(S_sim, A_sim)
 ```
 Where κ is an exploration bonus parameter that controls the degree of exploration.
+
+This encourages the agent to revisit states that haven't been visited in a long time, which is especially useful when the environment changes.
