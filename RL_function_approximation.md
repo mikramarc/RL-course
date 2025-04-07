@@ -13,11 +13,14 @@ Function approximation in RL is similar to supervised learning, with state-value
 
 ### Prediction Objective
 Minimizing the mean squared value error (MSVE) over the on-policy distribution:
+
 $\overline{VE}(\mathbf{w}) = \sum_{s \in \mathcal{S}} \mu(s) [v_{\pi}(s) - \hat{v}(s, \mathbf{w})]^2$
+
 where $\mu(s)$ is the on-policy distribution.
 
 ### Mean Squared Value Error (MSVE)
 The average squared difference between the true value function $v_{\pi}(s)$ and its approximation $\hat{v}(s, \mathbf{w})$, weighted by the on-policy distribution:
+
 $\overline{VE}(\mathbf{w}) = \mathbb{E}_{\mu}[(v_{\pi}(S) - \hat{v}(S, \mathbf{w}))^2]$
 
 ### On-Policy Distribution
@@ -67,7 +70,9 @@ $\mathbf{w_{TD}} = \mathbf{w}$ such that $\mathbb{E}[(R_{t+1} + \gamma \hat{v}(S
 
 ### n-Step Semi-Gradient TD
 Uses an n-step return as the update target:
+
 $G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + ... + \gamma^{n-1}R_{t+n} + \gamma^n \hat{v}(S_{t+n}, \mathbf{w})$
+
 $\mathbf{w}_{t+n} = \mathbf{w}_{t+n-1} + \alpha [G_{t:t+n} - \hat{v}(S_t, \mathbf{w}_{t+n-1})]\nabla \hat{v}(S_t, \mathbf{w}_{t+n-1})$
 
 ## Constructing Features for Prediction
