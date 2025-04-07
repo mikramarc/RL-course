@@ -21,7 +21,7 @@ where $\mu(s)$ is the on-policy distribution.
 ### Mean Squared Value Error (MSVE)
 The average squared difference between the true value function $v_{\pi}(s)$ and its approximation $\hat{v}(s, \mathbf{w})$, weighted by the on-policy distribution:
 
-$\overline{VE}(\mathbf{w}) = \mathbb{E}_{\mu}[(v_{\pi}(S) - \hat{v}(S, \mathbf{w}))^2]$
+$\overline{VE}(\mathbf{w}) = \mathbb{E}_{\mu} [(v_{\pi}(S) - \hat{v}(S, \mathbf{w}))^2]$
 
 ### On-Policy Distribution
 The distribution of states encountered when following policy $\pi$. For continuing tasks, it's the stationary distribution under $\pi$. For episodic tasks, it depends on the starting state distribution and transition dynamics under $\pi$.
@@ -74,6 +74,7 @@ Uses an n-step return as the update target:
 $G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + ... + \gamma^{n-1}R_{t+n} + \gamma^n \hat{v}(S_{t+n}, \mathbf{w})$
 
 $\mathbf{w}_{t+n} = \mathbf{w}_{t+n-1} + \alpha [G_{t:t+n} - \hat{v}(S_t, \mathbf{w}_{t+n-1})]\nabla \hat{v}(S_t, \mathbf{w}_{t+n-1})$
+
 
 ## Constructing Features for Prediction
 
