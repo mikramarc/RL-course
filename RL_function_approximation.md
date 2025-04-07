@@ -73,9 +73,7 @@ Uses an n-step return as the update target:
 
 $G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + ... + \gamma^{n-1}R_{t+n} + \gamma^n \hat{v}(S_{t+n}, \mathbf{w})$
 
-$\mathbf{w}_{t+n} = \mathbf{w}_{t+n-1} + \alpha [G_{t:t+n} - \hat{v}(S_t, \mathbf{w}_{t+n-1})]\nabla \hat{v}(S_t, \mathbf{w}_{t+n-1})$
-
-$w_{t+n} = w_{t+n-1} + \alpha [G_{t:t+n} - \hat{v}(S_t, w_{t+n-1})] \nabla \hat{v}(S_t, w_{t+n-1})}$
+$w_{t+n} = w_{t+n-1} + \alpha [G_{t:t+n} - \hat{v}(S_t, w_{t+n-1})]\nabla \hat{v}(S_t, w_{t+n-1})$
 
 
 ## Constructing Features for Prediction
